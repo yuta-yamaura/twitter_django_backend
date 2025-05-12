@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  config:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/config
+    command: python3 manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    tty: true
