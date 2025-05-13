@@ -5,6 +5,6 @@ from rest_framework_simplejwt.views import (
 )
 
 urlpatterns = [
-    # path('users/signup/', views.SignUpView.as_view(),name='signup'), # サインアップ
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('users/register/', views.registerUser ,name='register'), # ユーザー作成
+    path('users/login/', views.MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
 ]

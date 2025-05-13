@@ -3,25 +3,23 @@ from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 # Create your models here.
 
 class UserManager(BaseUserManager):
-    def create_user(self, username, email, telephone_number, date_of_birth, password=None):
+    def create_user(self, username, email, telephone_number, password=None):
         if not email:
             raise ValueError('メールアドレスは必須です')
         user = self.model(
             username=username,
             email=self.normalize_email(email),
             telephone_number=telephone_number,
-            date_of_birth=date_of_birth,
         )
         user.set_password(password)
         user.save(using=self._db)
         return user
     
-    def create_superuser(self, username, email, telephone_number, date_of_birth, password=None):
+    def create_superuser(self, username, email, telephone_number, password=None):
         user = self.create_user(
             username,
             email,
             telephone_number,
-            date_of_birth,
             password=password,
         )
         user.is_admin = True
@@ -52,7 +50,7 @@ class User(AbstractBaseUser):
 
     USERNAME_FIELD = 'username'
     EMAIL_FIELD = 'email'
-    REQUIRED_FIELDS = ['email', 'telephone_number', 'date_of_birth']
+    REQUIRED_FIELDS = ['email', 'telephone_number']
 
     def __str__(self):
         return self.email
