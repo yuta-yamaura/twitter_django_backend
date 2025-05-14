@@ -3,6 +3,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework import status
 from .models import User
 from typing import Any
 from .serializers import UserSerializer, UserSerializerWithToken
@@ -23,13 +24,16 @@ class MyTokenObtainPairView(TokenObtainPairView):
 
 @api_view(['POST'])
 def registerUser(request):
-    data = request.data
-    print(data)
-    user = User.objects.create_user(
-        username=data['username'],
-        email=data['email'],
-        telephone_number=data['telephone_number'],
-        password=make_password(data['password'])
-    )
-    serializer = UserSerializerWithToken(user, many=False)
-    return Response(serializer.data)
+    try:
+        data = request.data
+        user = User.objects.create_user(
+            username=data['username'],
+            email=data['email'],
+            telephone_number=data['telephone_number'],
+            password=make_password(data['password'])
+        )
+        serializer = UserSerializerWithToken(user, many=False)
+        return Response(serializer.data)
+    except:
+        message = {'ユーザー登録に失敗しました。'}
+        return Response(message, status=status.HTTP_400_BAD_REQUEST)
