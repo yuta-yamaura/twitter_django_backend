@@ -5,3 +5,5 @@ __pycache__/
 storage/*
 db_data
 config/__pycache__
+xclone
+db.sqlite3
