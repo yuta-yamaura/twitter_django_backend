@@ -33,9 +33,3 @@ def registerUser(request):
     )
     serializer = UserSerializerWithToken(user, many=False)
     return Response(serializer.data)
-
-@api_view(['GET'])
-def getUserProfile(request):
-    user = request.user
-    serializer = UserSerializer(user, many=False)
-    return Response(serializer.data)
