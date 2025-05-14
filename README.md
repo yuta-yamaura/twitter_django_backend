@@ -3,10 +3,16 @@
 以下のディレクトリに移動
 
 ```
-$ cd /Users/user/Projects/Xclone
+$ cd twitter_django_backend
 ```
 
-Django の仮装環境を起動
+Django の仮装環境を作成
+
+```
+$ python -m venv venv
+```
+
+Django の仮装環境を起動 ※venv ディレクトリと同じ階層で実行
 
 ```
 $ source venv/bin/activate
