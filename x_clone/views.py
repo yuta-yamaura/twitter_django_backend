@@ -1,26 +1,11 @@
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework import status
 from .models import User
-from typing import Any
-from .serializers import UserSerializer, UserSerializerWithToken
+from .serializers import UserSerializerWithToken
 from django.contrib.auth.hashers import make_password
 # Create your views here.
-
-class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-    def validate(self, attrs: dict[str, Any]) -> dict[str, str]:
-        data = super().validate(attrs)
-
-        data["username"] = self.user.username
-        data["email"] = self.user.email
-
-        return data
-
-class MyTokenObtainPairView(TokenObtainPairView):
-    serializer_class = MyTokenObtainPairSerializer
 
 @api_view(['POST'])
 def registerUser(request):
