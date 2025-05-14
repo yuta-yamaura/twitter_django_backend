@@ -24,11 +24,12 @@ class MyTokenObtainPairView(TokenObtainPairView):
 @api_view(['POST'])
 def registerUser(request):
     data = request.data
+    print(data)
     user = User.objects.create_user(
-        username = data['username'],
-        email = data['email'],
-        telephone_number = data['telephone_number'],
-        password = make_password(data['password'])
+        username=data['username'],
+        email=data['email'],
+        telephone_number=data['telephone_number'],
+        password=make_password(data['password'])
     )
     serializer = UserSerializerWithToken(user, many=False)
     return Response(serializer.data)

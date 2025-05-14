@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +27,7 @@ SECRET_KEY = 'django-insecure-s+0_vmb*ft%6hh5ltx55ohmm-9a-w^x+^l4d%m0d1v^up43$r#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0', 'localhost:5174']
 
 
 # Application definition
@@ -51,7 +52,6 @@ REST_FRAMEWORK = {
     )
 }
 
-from datetime import timedelta
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
@@ -99,6 +99,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -179,3 +180,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # カスタムユーザーモデル
 AUTH_USER_MODEL = 'x_clone.User'
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5174",
+]
