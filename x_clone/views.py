@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -18,7 +17,7 @@ def registerUser(request):
             password=make_password(data['password'])
         )
         serializer = UserSerializerWithToken(user, many=False)
-        return Response(serializer.data)
+        return Response(serializer.data['token'])
     except:
         message = {'ユーザー登録に失敗しました。'}
         return Response(message, status=status.HTTP_400_BAD_REQUEST)
