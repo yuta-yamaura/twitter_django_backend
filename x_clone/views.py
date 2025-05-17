@@ -3,11 +3,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import User
 from .serializers import UserSerializerWithToken
-from django.contrib.auth.hashers import make_password
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
 # Create your views here.
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-    def validate(self, attrs: dict[str, Any]) -> dict[str, str]:
+    def validate(self, attrs: dict[str, any]) -> dict[str, str]:
         data = super().validate(attrs)
 
         serializer = UserSerializerWithToken(self.user).data
@@ -27,7 +28,7 @@ def registerUser(request):
             username=data['username'],
             email=data['email'],
             telephone_number=data['telephone_number'],
-            password=make_password(data['password'])
+            password=data['password']
         )
         serializer = UserSerializerWithToken(user, many=False)
         return Response(serializer.data['token'])
