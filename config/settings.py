@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
-    'x_clone',
+    'users',
 ]
 
 REST_FRAMEWORK = {
@@ -179,7 +179,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # カスタムユーザーモデル
-AUTH_USER_MODEL = 'x_clone.User'
+AUTH_USER_MODEL = 'users.User'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
