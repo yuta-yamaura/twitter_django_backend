@@ -3,7 +3,6 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import User
 from .serializers import UserSerializerWithToken
-from django.contrib.auth.hashers import make_password
 # Create your views here.
 
 @api_view(['POST'])
@@ -14,7 +13,7 @@ def registerUser(request):
             username=data['username'],
             email=data['email'],
             telephone_number=data['telephoneNumber'],
-            password=make_password(data['password'])
+            password=data['password']
         )
         serializer = UserSerializerWithToken(user, many=False)
         return Response(serializer.data['token'])
