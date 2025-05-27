@@ -28,9 +28,9 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs: dict[str, Any]) -> dict[str, str]:
         data = super().validate(attrs)
 
-        data["username"] = self.user.username
-        data["email"] = self.user.email
-
+        serializer = UserSerializerWithToken(self.user).data
+        for k, v in serializer.items():
+            data[k] = v
         return data
 
 class MyTokenObtainPairView(TokenObtainPairView):
