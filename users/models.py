@@ -6,6 +6,10 @@ class UserManager(BaseUserManager):
     def create_user(self, username, email, telephone_number, password=None):
         if not email:
             raise ValueError('メールアドレスは必須です')
+        if not username:
+            raise ValueError('ユーザー名は必須です')
+        if not password:
+            raise ValueError('パスワードは必須です')
         user = self.model(
             username=username,
             email=self.normalize_email(email),
