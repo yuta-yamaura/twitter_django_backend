@@ -194,3 +194,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:5174",
 ]
+
+CORS_ALLOW_CREDENTIALS = True # 認証情報（クッキー、セッション）の共有を許可
+
+# 開発環境の場合のみCORSオリジンを全て許可
+if DEBUG:
+    CORS_ORIGIN_ALLOW_ALL = True
