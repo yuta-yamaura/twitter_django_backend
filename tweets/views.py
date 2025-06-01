@@ -11,6 +11,5 @@ class TweetViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def perform_create(self, serializer):
-        print(self.request)
         # 新規作成時に "user" を自動的にセット
         serializer.save(user=self.request.user)

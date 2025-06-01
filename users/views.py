@@ -1,8 +1,12 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.generics import UpdateAPIView
+from rest_framework.views import APIView
 from rest_framework import status
 from .models import User
-from .serializers import UserSerializerWithToken
+from .serializers import UserSerializerWithToken, UserProfileSerializer, UpdateUserProfileSerializer
+from django.shortcuts import get_object_or_404
 # Create your views here.
 
 @api_view(['POST'])
@@ -20,3 +24,21 @@ def registerUser(request):
     except:
         message = {'ユーザー登録に失敗しました。'}
         return Response(message, status=status.HTTP_400_BAD_REQUEST)
+
+class UserUpdateView(APIView):
+    def get(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        serializer = UserProfileSerializer(user, many=False, context={'request': request})
+        print('views.pyのserializerの中身', serializer)
+        return Response(serializer.data)
+
+    def patch(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        # シリアライザの作成
+        serializer = UpdateUserProfileSerializer(instance=user, data=request.data, partial=True, many=False, context={'request': request})
+        # バリデーション
+        serializer.is_valid(raise_exception=True)
+        # DB更新
+        serializer.save()
+
+        return Response(serializer.data)
