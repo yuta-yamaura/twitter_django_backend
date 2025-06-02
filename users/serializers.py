@@ -39,9 +39,7 @@ class UserProfileSerializer(BaseUserSerializer):
     def get_tweets(self, obj):
         # ユーザーのツイートを取得（作成日時の降順）
         user_tweets = obj.tweets.all().order_by('-created_at')
-        print('user_tweetsの中身', user_tweets)
         user_tweets_list = ProfileTweetSerializer(user_tweets, many=True, context=self.context).data
-        print('user_tweets_listの中身', user_tweets_list)
         return user_tweets_list
 
     def to_representation(self, instance):
@@ -52,17 +50,8 @@ class UserProfileSerializer(BaseUserSerializer):
 class UpdateUserProfileSerializer(BaseUserSerializer):
     class Meta:
         model = User
-        fields = ['background_image', 'image', 'account_name', 'self_introduction', 'address', 'web_site', 'date_of_birth']
+        fields = BaseUserSerializer.Meta.fields
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        return {
-            'backgroundImage': data['background_image'],
-            'image': data['image'],
-            'accountName': data['account_name'],
-            'selfIntroduction': data['self_introduction'],
-            'address': data['address'],
-            'web_site': data['web_site'],
-            'date_of_birth': data['date_of_birth'],
-            'tweets': data['tweets'],
-        }
+        return data

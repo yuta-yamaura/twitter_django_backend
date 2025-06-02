@@ -29,7 +29,6 @@ class UserUpdateView(APIView):
     def get(self, request, pk):
         user = get_object_or_404(User, pk=pk)
         serializer = UserProfileSerializer(user, many=False, context={'request': request})
-        print('views.pyのserializerの中身', serializer)
         return Response(serializer.data)
 
     def patch(self, request, pk):
