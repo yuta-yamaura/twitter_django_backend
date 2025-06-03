@@ -1,12 +1,12 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.generics import UpdateAPIView
 from rest_framework.views import APIView
 from rest_framework import status
 from .models import User
 from .serializers import UserSerializerWithToken, UserProfileSerializer, UpdateUserProfileSerializer
 from django.shortcuts import get_object_or_404
+from tweets.models import Tweet
 # Create your views here.
 
 @api_view(['POST'])
@@ -41,3 +41,10 @@ class UserUpdateView(APIView):
         serializer.save()
 
         return Response(serializer.data)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def deleteTweet(rewuest, pk):
+    tweet = Tweet.user.get(pk=pk)
+    tweet.delete()
+    return Response('Tweet Deleted')
