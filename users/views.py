@@ -20,9 +20,10 @@ def registerUser(request):
             password=data['password']
         )
         serializer = UserSerializerWithToken(user, many=False)
-        return Response(serializer.data['token'])
-    except:
-        message = {'ユーザー登録に失敗しました。'}
+        return Response(serializer.data)
+    except Exception as e:
+        print('エラーの詳細:', str(e))
+        message = {'detail': 'ユーザー登録に失敗しました。'}
         return Response(message, status=status.HTTP_400_BAD_REQUEST)
 
 class UserUpdateView(APIView):
