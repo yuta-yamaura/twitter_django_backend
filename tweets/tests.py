@@ -1,48 +1,49 @@
-from django.test import TestCase
 from .models import User
 from .models import Tweet
-from django.core.exceptions import ValidationError
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APITestCase, APIClient
 
 # Create your tests here.
-class TweetCreateViewTest(TestCase):
+class TweetCreateViewTest(APITestCase):
+    # テストユーザーの作成
     @classmethod
     def setUpTestData(cls):
+        # Original User
         cls.user = User.objects.create_user(
-            username='test1',
-            email='test1@gmail.com',
-            telephone_number='080-1111-1111',
+            username='origin',
+            email='origin@gmail.com',
+            telephone_number='080-1234-5678',
             password='password'
             )
     
     def setUp(self):
-        # テストメソッド実行前にsetUpTestDataで作成したユーザーでログインする
-        self.client.login(username='test1', password='password')
+        # 標準のリクエストメソッド(put,delete,patch,etc...)が使えるようセットアップ
+        self.client = APIClient()
+        # リクエストを強制的に認証
+        self.client.force_authenticate(user=self.user)
     
     def test_tweet_create_success(self):
-        tweet = Tweet.objects.create(
-            # self.userでクラス変数のcls.userにアクセス
-            user = self.user,
-            content = 'test',
-        )
-        new_tweet = Tweet.objects.get(user=tweet.user)
-        self.assertEqual(new_tweet.user, self.user)
-        self.assertEqual(new_tweet.content, 'test')
+        """Tweet作成のテスト"""
+        url = reverse('tweets-list')
+        data = {'content': 'create test'}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Tweet.objects.count(), 1)
+        self.assertEqual(Tweet.objects.get().content, 'create test')
+        self.assertEqual(Tweet.objects.get().user, self.user)
 
     def test_tweet_max_length_success(self):
-        tweet = Tweet.objects.create(
-            # self.userでクラス変数のcls.userにアクセス
-            user = self.user,
-            # ツイートの文言をmax_lengthの境界値である140文字に設定
-            content = 'a' * 140,
-        )
-        tweet.full_clean()
-        self.assertEqual(len(tweet.content), 140)
-
-    def test_tweet_max_length_failed(self):
-        tweet = Tweet(
-            user = self.user,
-            # ツイートの文章を141文字にしてバリデーションエラーを発生させるようにする
-            content = 'a' * 141
-        )
-        with self.assertRaises(ValidationError):
-            tweet.full_clean()
+        """最大文字数(140文字)のTweetの作成"""
+        url = reverse('tweets-list')
+        data = {'content': 'a' * 140}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(len(Tweet.objects.get().content), 140)
+    
+    def test_tweet_maximum_number_of_characters_exceeded(self):
+        """最大文字数超過(141文字)のTweetの作成"""
+        url = reverse('tweets-list')
+        data = {'content': 'a' * 141}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
