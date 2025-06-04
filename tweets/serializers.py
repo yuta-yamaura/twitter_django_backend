@@ -1,22 +1,62 @@
 from rest_framework import serializers
 from .models import Tweet
+from users.base_serializers import BaseUserSerializer
 
 class TweetSerializer(serializers.ModelSerializer):
-    username = serializers.ReadOnlyField(source='user.username')
-    account_name = serializers.ReadOnlyField(source='user.account_name')
-    user_image = serializers.SerializerMethodField()
+    user = BaseUserSerializer(read_only=True)
 
     class Meta:
         model = Tweet
-        fields = ['id', 'username', 'content', 'user_image', 'account_name', 'image', 'created_at']
-        read_only_fields = ['id', 'created_at', 'updated_at', 'username', 'account_name']
+        fields = ['id', 'content', 'image', 'created_at', 'user']
+        read_only_fields = ['id', 'created_at', 'updated_at']
+    
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        return {
+            'id': data['id'],
+            'content': data['content'],
+            'tweetImage': data['image'],
+            'createdAt': data['created_at'],
+            'user': data['user'],
+        }
+    
+class ProfileTweetSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField(read_only=True)
+    tweet_image = serializers.SerializerMethodField(read_only=True)
 
+    class Meta:
+        model = Tweet
+        fields = ['id', 'content', 'tweet_image', 'created_at', 'user']
+        read_only_fields = ['id', 'created_at', 'updated_at']
+    
+    def get_user(self, obj):
+        # プロフィール画面に必要なユーザー情報を取得
+        return {
+            'image': self.get_user_image(obj)
+        }
+    
     def get_user_image(self, obj):
         if obj.user.image:
             request = self.context.get('request')
-            print(request)
             if request:
                 return request.build_absolute_uri(obj.user.image.url)
             return obj.user.image.url
         return None
-    
+
+    def get_tweet_image(self, obj):
+        if obj.image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        return {
+            'id': data['id'],
+            'content': data['content'],
+            'tweetImage': data['tweet_image'],
+            'createdAt': data['created_at'],
+            'user': data['user'],
+        }
