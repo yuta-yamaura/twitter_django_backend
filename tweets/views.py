@@ -3,6 +3,7 @@ from rest_framework import viewsets, permissions
 from .models import Tweet
 from .serializers import TweetSerializer
 from .permissions import CreateUserEditOrDelete
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 
 # Create your views here.
 class TweetViewSet(viewsets.ModelViewSet):
