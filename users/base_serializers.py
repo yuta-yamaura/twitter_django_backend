@@ -28,19 +28,3 @@ class BaseUserSerializer(serializers.ModelSerializer):
 
     def get_isAdmin(self, obj):
         return obj.is_staff 
-    
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        return {
-            'id': data['id'],
-            'username': data['username'],
-            'email': data['email'],
-            'image': data['image'],
-            'accountName': data['account_name'],
-            'selfIntroduction': data['self_introduction'],
-            'backgroundImage': data['background_image'],
-            'address': data['address'],
-            'dateOfBirth': data['date_of_birth'],
-            'webSite': data['web_site'],
-            'createdAt': data['created_at'],
-        }

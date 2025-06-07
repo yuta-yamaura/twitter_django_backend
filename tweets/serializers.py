@@ -9,14 +9,3 @@ class TweetSerializer(serializers.ModelSerializer):
         model = Tweet
         fields = ['id', 'content', 'image', 'created_at', 'user']
         read_only_fields = ['id', 'created_at', 'updated_at']
-    
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        return {
-            'id': data['id'],
-            'content': data['content'],
-            'tweetImage': data['image'],
-            'createdAt': data['created_at'],
-            'user': data['user'],
-        }
-    
