@@ -7,10 +7,6 @@ class CreateUserEditOrDelete(permissions.BasePermission):
         return False
 
     def has_object_permission(self, request, view, obj):
-        # super userは全ての操作が可能
-        if request.user.is_superuser:
-            return True
-
         # ツイートの所有者の場合
         if obj.user == request.user:
             if request.method in permissions.SAFE_METHODS:
