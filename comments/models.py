@@ -6,7 +6,7 @@ from tweets.models import Tweet
 class Comment(models.Model):
     user = models.ForeignKey(User, related_name="comments" ,on_delete=models.CASCADE)
     tweet = models.ForeignKey(Tweet, related_name="comments", on_delete=models.CASCADE)
-    comments = models.TextField(max_length=140, null=True, blank=True)
+    comment = models.TextField(max_length=140, null=True, blank=True)
     image = models.ImageField(upload_to='tweet_images/',null=True, blank=True)
     created_at = models.DateTimeField(auto_now=True)
     updated_at = models.DateTimeField(auto_now=True)

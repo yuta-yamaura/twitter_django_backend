@@ -39,7 +39,9 @@ class UserProfileSerializer(BaseUserSerializer):
     def get_tweets(self, obj):
         # ユーザーのツイートを取得（作成日時の降順）
         user_tweets = obj.tweets.all().order_by('-created_at')
+        print('user_tweetsの中身', user_tweets)
         user_tweets_list = ProfileTweetSerializer(user_tweets, many=True, context=self.context).data
+        print('user_tweets_listの中身', user_tweets_list)
         return user_tweets_list
 
     def to_representation(self, instance):
