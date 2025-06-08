@@ -16,13 +16,6 @@ class TweetCreateViewTest(APITestCase):
             telephone_number='080-1234-5678',
             password='password'
             )
-        # Other User(権限確認用のダミーユーザー)
-        cls.other_user = User.objects.create_user(
-            username='other',
-            email='other@gmail.com',
-            telephone_number='080-1234-5678',
-            password='password'
-            )
     
     def setUp(self):
         # 標準のリクエストメソッド(put,delete,patch,etc...)が使えるようセットアップ
