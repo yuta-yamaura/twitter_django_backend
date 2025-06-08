@@ -1,5 +1,8 @@
 from django.shortcuts import render
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from .models import Tweet
 from .serializers import TweetSerializer
 from .permissions import CreateUserEditOrDelete
@@ -14,3 +17,10 @@ class TweetViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # 新規作成時に "user" を自動的にセット
         serializer.save(user=self.request.user)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def deleteTweet(rewuest, pk):
+    tweet = Tweet.user.get(pk=pk)
+    tweet.delete()
+    return Response('Tweet Deleted')

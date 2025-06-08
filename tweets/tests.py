@@ -16,6 +16,13 @@ class TweetCreateViewTest(APITestCase):
             telephone_number='080-1234-5678',
             password='password'
             )
+        # Other User(権限確認用のダミーユーザー)
+        cls.other_user = User.objects.create_user(
+            username='other',
+            email='other@gmail.com',
+            telephone_number='080-1234-5678',
+            password='password'
+            )
     
     def setUp(self):
         # 標準のリクエストメソッド(put,delete,patch,etc...)が使えるようセットアップ
@@ -47,3 +54,42 @@ class TweetCreateViewTest(APITestCase):
         data = {'content': 'a' * 141}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+class TweetDeleteViewTest(APITestCase):
+    # テストユーザーの作成
+    @classmethod
+    def setUpTestData(cls):
+        # Original User
+        cls.user = User.objects.create_user(
+            username='origin',
+            email='origin@gmail.com',
+            telephone_number='080-1234-5678',
+            password='password'
+            )
+        # Other User(権限確認用のダミーユーザー)
+        cls.other_user = User.objects.create_user(
+            username='other',
+            email='other@gmail.com',
+            telephone_number='080-1234-5678',
+            password='password'
+            )
+        
+    def setUp(self):
+        # 標準のリクエストメソッド(put,delete,patch,etc...)が使えるようセットアップ
+        self.client = APIClient()
+        # Original Userでログイン
+        self.client.force_authenticate(user=self.user)
+    
+    def test_delete_own_tweet(self):
+        """Tweet作成者による削除可否のテスト"""
+        tweet = Tweet.objects.create(user=self.user, content='delete test')
+        url = reverse('tweets-detail', kwargs={'pk': tweet.pk})
+        response = self.client.delete(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_delete_other_tweet(self):
+        """その他ユーザーが作成したTweet削除不可のテスト"""
+        tweet = Tweet.objects.create(user=self.other_user, content='delete test')
+        url = reverse('tweets-detail', kwargs={'pk': tweet.pk})
+        response = self.client.delete(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
