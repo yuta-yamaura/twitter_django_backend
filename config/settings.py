@@ -56,7 +56,16 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 5,
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
-    ]
+    ],
+    "DEFAULT_RENDERER_CLASSES": (
+         "djangorestframework_camel_case.render.CamelCaseJSONRenderer",
+         "djangorestframework_camel_case.render.CamelCaseBrowsableAPIRenderer",
+     ),
+     "DEFAULT_PARSER_CLASSES": (
+         "djangorestframework_camel_case.parser.CamelCaseFormParser",
+         "djangorestframework_camel_case.parser.CamelCaseMultiPartParser",
+         "djangorestframework_camel_case.parser.CamelCaseJSONParser",
+     ),
 }
 
 SIMPLE_JWT = {
@@ -140,6 +149,10 @@ DATABASES = {
         'PASSWORD': os.environ.get('DB_PASSWORD'),
         'HOST': os.environ.get('DB_HOST'),
         'PORT': os.environ.get('DB_PORT'),
+        # ユニットテスト用の設定
+        'TEST': {
+            'MIRROR': "default",
+        },
     }
 }
 

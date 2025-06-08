@@ -1,7 +1,6 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework import status, generics
 from .models import User
 from .serializers import UserSerializerWithToken, UserProfileSerializer, UpdateUserProfileSerializer
@@ -18,7 +17,7 @@ def registerUser(request):
         user = User.objects.create_user(
             username=data['username'],
             email=data['email'],
-            telephone_number=data['telephoneNumber'],
+            telephone_number=data['telephone_number'],
             password=data['password']
         )
         serializer = UserSerializerWithToken(user, many=False)
@@ -49,10 +48,3 @@ class UserUpdateView(generics.UpdateAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
-
-@api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
-def deleteTweet(rewuest, pk):
-    tweet = Tweet.user.get(pk=pk)
-    tweet.delete()
-    return Response('Tweet Deleted')
