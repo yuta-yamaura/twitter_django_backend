@@ -7,8 +7,6 @@ class CommentCreateOrDelete(permissions.BasePermission):
         return False
 
     def has_object_permission(self, request, view, obj):
-        print('requestの中身', request)
-        print('permission objの中身', obj)
         # コメントの所有者の場合
         if obj.user == request.user:
             if request.method in permissions.SAFE_METHODS:
