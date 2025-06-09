@@ -46,7 +46,7 @@ class UserProfileComment(generics.RetrieveDestroyAPIView):
         self.check_object_permissions(self.request, obj)
         return obj
     
-    def get(self, request):
+    def get(self, request, pk):
         user = self.get_object()
         serializer = ProfileSerializer(user, many=False, context={'request': request})
         return Response(serializer.data)
