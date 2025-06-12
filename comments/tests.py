@@ -49,4 +49,4 @@ class CommentDeleteViewTest(APITestCase):
         comment = Comment.objects.create(user=self.other_user, tweet=self.tweet, comment='delete test')
         url = reverse('tweet_comments_delete', kwargs={'pk': comment.pk})
         response = self.client.delete(url, format='json')
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

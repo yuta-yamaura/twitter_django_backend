@@ -1,4 +1,4 @@
-from rest_framework import permissions
+from rest_framework import permissions, exceptions
 
 class CommentCreateOrDelete(permissions.BasePermission):
     def has_permission(self, request, view):
@@ -8,11 +8,6 @@ class CommentCreateOrDelete(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         # コメントの所有者の場合
-        if obj.user == request.user:
-            if request.method in permissions.SAFE_METHODS:
-                return True
-            # 登録、削除を許可
-            return request.method in ["PUT", "DELETE"]
-
-        # その他のユーザーは読み取りのみ許可
-        return request.method in permissions.SAFE_METHODS
+        if obj.user != request.user:
+            raise exceptions.AuthenticationFailed('このコメントを削除する権限がありません')
+        return True
