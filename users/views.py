@@ -27,7 +27,7 @@ def registerUser(request):
         message = {'detail': 'ユーザー登録に失敗しました。'}
         return Response(message, status=status.HTTP_400_BAD_REQUEST)
 
-class UserUpdateView(generics.UpdateAPIView):
+class UserUpdateView(generics.RetrieveUpdateAPIView):
     permission_classes = [UserProfileEdit]
     serializer_class = UpdateUserProfileSerializer
     queryset = User.objects.all()
@@ -37,14 +37,8 @@ class UserUpdateView(generics.UpdateAPIView):
         self.check_object_permissions(self.request, obj)
         return obj
 
-    def get(self, request, pk):
-        user = self.get_object()
-        serializer = UserProfileSerializer(user, many=False, context={'request': request})
-        return Response(serializer.data)
-
-    def patch(self, request, pk):
-        user = self.get_object()
-        serializer = self.get_serializer(user, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+    def get_serializer_class(self):
+        # GETリクエストとPATCHリクエストで異なるシリアライザーを使用
+        if self.request.method == 'PATCH':
+            return UpdateUserProfileSerializer
+        return UserProfileSerializer
