@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'users',
     'tweets',
     'comments',
+    'retweets',
 ]
 
 REST_FRAMEWORK = {
@@ -149,6 +150,10 @@ DATABASES = {
         'PASSWORD': os.environ.get('DB_PASSWORD'),
         'HOST': os.environ.get('DB_HOST'),
         'PORT': os.environ.get('DB_PORT'),
+        # ユニットテスト用の設定
+        'TEST': {
+            'MIRROR': "default",
+        },
     }
 }
 
