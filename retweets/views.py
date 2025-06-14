@@ -2,9 +2,12 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from tweets.models import Tweet
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, generics
 from .models import Retweet
 from .serializers import RetweetSerializer
+from django.shortcuts import get_object_or_404
+from users.models import User
+from .serializers import ProfileSerializer
 
 # Create your views here.
 class RetweetToggleAPIView(APIView):
@@ -38,3 +41,9 @@ class RetweetToggleAPIView(APIView):
             return Response({"message": "ツイートが存在しません"}, status=status.HTTP_404_NOT_FOUND)
         except Retweet.DoesNotExist:
             return Response({"message": "リツイートが存在しません"}, status=status.HTTP_404_NOT_FOUND)
+        
+class ProfileRetweet(generics.ListAPIView):
+    def get(self, request, *args, **kwargs):
+        user = get_object_or_404(User, pk=self.kwargs["pk"])
+        serializer = ProfileSerializer(user, many=False, context={"request": request})
+        return Response(serializer.data)

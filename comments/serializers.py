@@ -55,5 +55,4 @@ class ProfileSerializer(serializers.ModelSerializer):
         # ユーザーのコメントを取得（作成日時の降順）
         user_comments = obj.user_comments.all().order_by('-created_at')
         user_comments_list = ProfileCommentSerializer(user_comments, many=True, context=self.context).data
-        print('user_comments_listの中身', user_comments_list)
         return user_comments_list
