@@ -10,7 +10,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ['id', 'user', 'tweet', 'comment', 'image', 'created_at']
+        fields = ['id', 'user', 'tweet', 'content', 'image', 'created_at']
         read_only_fields = ['user', 'tweet', 'created_at']
 
 class ProfileCommentSerializer(serializers.ModelSerializer):
@@ -19,7 +19,7 @@ class ProfileCommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ['id', 'user', 'tweet', 'comment', 'image', 'created_at']
+        fields = ['id', 'user', 'tweet', 'content', 'image', 'created_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
     
     def get_user(self, obj):
