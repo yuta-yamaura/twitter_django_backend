@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from .models import Tweet
 from .serializers import TweetSerializer
 from .permissions import TweetDeletePermission, CreateUserEditOrDelete
+from django.db.models import Count
 
 # Create your views here.
 class TweetViewSet(viewsets.ModelViewSet):
@@ -30,3 +31,7 @@ class TweetViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             raise exceptions.AuthenticationFailed('このツイートを削除する権限がありません')
+
+    def get_queryset(self):
+        retweet = Tweet.objects.annotate(retweet_count=Count('tweet_retweets')).order_by("-created_at")
+        return retweet

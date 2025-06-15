@@ -1,23 +1,25 @@
 from rest_framework import serializers
-from .models import Tweet
+from .models import Comment
+from tweets.models import Tweet
+from users.models import User
 from users.base_serializers import BaseUserSerializer
+from rest_framework.response import Response
 
-class TweetSerializer(serializers.ModelSerializer):
+class CommentSerializer(serializers.ModelSerializer):
     user = BaseUserSerializer(read_only=True)
-    retweet_count = serializers.IntegerField(read_only=True)
 
     class Meta:
-        model = Tweet
-        fields = ['id', 'content', 'image', 'created_at', 'user', 'retweet_count']
-        read_only_fields = ['id', 'created_at', 'updated_at', 'retweet_count']
+        model = Comment
+        fields = ['id', 'user', 'tweet', 'comment', 'image', 'created_at']
+        read_only_fields = ['user', 'tweet', 'created_at']
 
-class ProfileTweetSerializer(serializers.ModelSerializer):
+class ProfileCommentSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField(read_only=True)
     image = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
-        model = Tweet
-        fields = ['id', 'content', 'image', 'created_at', 'user']
+        model = Comment
+        fields = ['id', 'user', 'tweet', 'comment', 'image', 'created_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
     
     def get_user(self, obj):
@@ -41,3 +43,16 @@ class ProfileTweetSerializer(serializers.ModelSerializer):
                 return request.build_absolute_uri(obj.image.url)
             return obj.image.url
         return None
+
+class ProfileSerializer(serializers.ModelSerializer):
+    comments = serializers.SerializerMethodField(read_only=True)
+    
+    class Meta:
+        model = User
+        fields = BaseUserSerializer.Meta.fields + ['comments']
+
+    def get_comments(self, obj):
+        # ユーザーのコメントを取得（作成日時の降順）
+        user_comments = obj.user_comments.all().order_by('-created_at')
+        user_comments_list = ProfileCommentSerializer(user_comments, many=True, context=self.context).data
+        return user_comments_list
