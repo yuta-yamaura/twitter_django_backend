@@ -3,6 +3,7 @@ from .models import Retweet
 from users.base_serializers import BaseUserSerializer
 from rest_framework.response import Response
 from users.models import User
+from django.db.models import Count
 
 class RetweetSerializer(serializers.ModelSerializer):
     user = BaseUserSerializer(read_only=True)
@@ -15,10 +16,11 @@ class RetweetSerializer(serializers.ModelSerializer):
 class ProfileRetweetSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField(read_only=True)
     tweet = serializers.SerializerMethodField(read_only=True)
+    retweet_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Retweet
-        fields = ['id', 'user', 'tweet', 'retweet', 'created_at']
+        fields = ['id', 'user', 'tweet', 'retweet', 'created_at', 'retweet_count']
         read_only_fields = ['id', 'created_at', 'updated_at']
     
     def get_user(self, obj):
@@ -58,6 +60,6 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = BaseUserSerializer.Meta.fields + ['retweet']
 
     def get_retweet(self, obj):
-        user_retweet = obj.user_retweets.all().order_by('-created_at')
-        user_retweet_list = ProfileRetweetSerializer(user_retweet, many=True, context=self.context).data
+        user_retweets = obj.user_retweets.select_related('retweet', 'retweet__user').annotate(retweet_count=Count('retweet__tweet_retweets')).order_by('-created_at')
+        user_retweet_list = ProfileRetweetSerializer(user_retweets, many=True, context=self.context).data
         return user_retweet_list
