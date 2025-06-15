@@ -33,7 +33,7 @@ class CommentCreateViewTest(APITestCase):
     def test_comment_create_success(self):
         """Comment作成のテスト"""
         url = reverse('tweet_comments_list_create', kwargs={'tweet_id': self.tweet.pk})
-        data = {'comment': 'comment create test'}
+        data = {'content': 'content create test'}
         response = self.client.post(url, data, format='json')
         
         # レスポンスから作成されたコメントのidを取得
@@ -42,7 +42,7 @@ class CommentCreateViewTest(APITestCase):
         
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Comment.objects.filter(pk=comment.pk).count(), 1)
-        self.assertEqual(comment.comment, 'comment create test')
+        self.assertEqual(comment.content, 'content create test')
         self.assertEqual(comment.user, self.user)
         self.assertEqual(comment.tweet, self.tweet)
 
@@ -78,14 +78,14 @@ class CommentDeleteViewTest(APITestCase):
     
     def test_delete_own_comment(self):
         """Comment作成者による削除可否のテスト"""
-        comment = Comment.objects.create(user=self.user, tweet=self.tweet, comment='delete test')
+        comment = Comment.objects.create(user=self.user, tweet=self.tweet, content='delete test')
         url = reverse('tweet_comments_delete', kwargs={'pk': comment.pk})
         response = self.client.delete(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_delete_other_comment(self):
         """その他ユーザーが作成したCommentの削除不可のテスト"""
-        comment = Comment.objects.create(user=self.other_user, tweet=self.tweet, comment='delete test')
+        comment = Comment.objects.create(user=self.other_user, tweet=self.tweet, content='delete test')
         url = reverse('tweet_comments_delete', kwargs={'pk': comment.pk})
         response = self.client.delete(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
