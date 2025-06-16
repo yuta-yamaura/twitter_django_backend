@@ -3,6 +3,7 @@ from .models import Like
 from users.base_serializers import BaseUserSerializer
 from rest_framework.response import Response
 from users.models import User
+from django.db.models import Count
 
 class LikeSerializer(serializers.ModelSerializer):
     user = BaseUserSerializer(read_only=True)
@@ -15,10 +16,11 @@ class LikeSerializer(serializers.ModelSerializer):
 class ProfileNiceSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField(read_only=True)
     tweet = serializers.SerializerMethodField(read_only=True)
+    like_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Like
-        fields = ['id', 'user', 'tweet', 'created_at']
+        fields = ['id', 'user', 'tweet', 'created_at', 'like_count']
         read_only_fields = ['id', 'created_at', 'updated_at']
     
     def get_user(self, obj):
@@ -58,6 +60,6 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = BaseUserSerializer.Meta.fields + ['like']
 
     def get_like(self, obj):
-        user_like = obj.user_likes.all().order_by('-created_at')
+        user_like = obj.user_likes.select_related('tweet', 'tweet__user').annotate(like_count=Count('tweet__tweet_likes')).order_by('-created_at')
         user_like_list = ProfileNiceSerializer(user_like, many=True, context=self.context).data
         return user_like_list
