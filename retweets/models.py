@@ -4,8 +4,8 @@ from tweets.models import Tweet
 
 # Create your models here.
 class Retweet(models.Model):
-    user = models.ForeignKey(User, related_name="user_retweets" ,on_delete=models.CASCADE)
-    retweet = models.ForeignKey(Tweet, related_name="tweet_retweets", on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name="retweets" ,on_delete=models.CASCADE)
+    tweet = models.ForeignKey(Tweet, related_name="retweets", on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -15,7 +15,7 @@ class Retweet(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["user", "retweet"],
+                fields=["user", "tweet"],
                 name="retweet_unique"
             )
         ]

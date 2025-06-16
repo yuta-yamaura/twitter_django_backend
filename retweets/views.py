@@ -19,7 +19,7 @@ class RetweetToggleAPIView(APIView):
         except Tweet.DoesNotExist:
             return Response({"error": "Tweet not found"}, status=status.HTTP_404_NOT_FOUND)
         
-        retweet, created = Retweet.objects.get_or_create(user=request.user, retweet=tweet)
+        retweet, created = Retweet.objects.get_or_create(user=request.user, tweet=tweet)
         if created:
             serializer = RetweetSerializer(retweet)
             return Response({
@@ -32,7 +32,7 @@ class RetweetToggleAPIView(APIView):
     def delete(self, request, pk):
         try:
             tweet = Tweet.objects.get(pk=pk)
-            retweet = Retweet.objects.get(user=request.user, retweet=tweet)
+            retweet = Retweet.objects.get(user=request.user, tweet=tweet)
             retweet.delete()
             return Response({
                 "message": "リツイートを削除しました"
