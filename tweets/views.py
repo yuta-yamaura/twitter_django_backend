@@ -36,10 +36,10 @@ class TweetViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             # OuterRefでTweetモデルのpkとRetweetモデルのretweetカラムを比較
             user_retweet = Retweet.objects.filter(user=self.request.user, tweet=OuterRef('pk'))
-            tweet_list = Tweet.objects.all().annotate(retweet_count=Count('tweet_retweets'), login_user_retweeted=Exists(user_retweet)).order_by("-created_at")
+            tweet_list = Tweet.objects.all().annotate(retweet_count=Count('retweets'), login_user_retweeted=Exists(user_retweet)).order_by("-created_at")
             return tweet_list
         if self.action == 'retrieve':
             tweet = Tweet.objects.get(pk = self.kwargs["pk"])
-            retweet_tweet = tweet.tweet_retweets.filter(user = self.request.user)
-            retweet = Tweet.objects.annotate(retweet_count=Count('tweet_retweets'), login_user_retweeted=Exists(retweet_tweet)).order_by("-created_at")
+            retweet_tweet = tweet.retweets.filter(user = self.request.user)
+            retweet = Tweet.objects.annotate(retweet_count=Count('retweets'), login_user_retweeted=Exists(retweet_tweet)).order_by("-created_at")
             return retweet
