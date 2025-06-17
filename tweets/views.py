@@ -36,13 +36,13 @@ class TweetViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if self.action == 'list':
             # OuterRefでTweetモデルのpkとRetweetモデルのretweetカラムを比較
-            user_retweet = Retweet.objects.filter(user=self.request.user, retweet=OuterRef('pk'))
-            user_like = Like.objects.filter(user=self.request.user, tweet=OuterRef('pk'))
-            tweet_list = Tweet.objects.all().annotate(retweet_count=Count('tweet_retweets'), login_user_retweeted=Exists(user_retweet), login_user_liked=Exists(user_like)).order_by("-created_at")
+            user_retweeted = Retweet.objects.filter(user=self.request.user, tweet=OuterRef('pk'))
+            user_liked = Like.objects.filter(user=self.request.user, tweet=OuterRef('pk'))
+            tweet_list = Tweet.objects.all().annotate(retweet_count=Count('retweets', distinct=True), like_count=Count('likes', distinct=True), login_user_retweeted=Exists(user_retweeted), login_user_liked=Exists(user_liked)).order_by("-created_at")
             return tweet_list
         if self.action == 'retrieve':
             tweet = Tweet.objects.get(pk = self.kwargs["pk"])
-            retweet_tweet = tweet.tweet_retweets.filter(user = self.request.user)
-            like_tweet = tweet.tweet_likes.filter(user = self.request.user)
-            retweet = Tweet.objects.annotate(retweet_count=Count('tweet_retweets'), login_user_retweeted=Exists(retweet_tweet), login_user_liked=Exists(like_tweet)).order_by("-created_at")
+            user_retweeted = tweet.retweets.filter(user = self.request.user)
+            user_liked = tweet.likes.filter(user = self.request.user)
+            retweet = Tweet.objects.annotate(retweet_count=Count('retweets', distinct=True), like_count=Count('likes', distinct=True), login_user_retweeted=Exists(user_retweeted), login_user_liked=Exists(user_liked)).order_by("-created_at")
             return retweet
