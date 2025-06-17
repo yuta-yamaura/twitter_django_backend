@@ -3,10 +3,11 @@ from rest_framework.response import Response
 from .models import Tweet
 from .serializers import TweetSerializer
 from .permissions import TweetDeletePermission, CreateUserEditOrDelete
-
+from django.db.models import Count, Exists, OuterRef
+from retweets.models import Retweet
 # Create your views here.
 class TweetViewSet(viewsets.ModelViewSet):
-    queryset = Tweet.objects.all().order_by("-created_at")
+    # queryset = 
     serializer_class = TweetSerializer
     # 第三者が他のTweetを編集、削除できないようデフォルトのパーミッションにカスタムパーミッションを指定
     permission_classes = [CreateUserEditOrDelete]
@@ -30,3 +31,15 @@ class TweetViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             raise exceptions.AuthenticationFailed('このツイートを削除する権限がありません')
+
+    def get_queryset(self):
+        if self.action == 'list':
+            # OuterRefでTweetモデルのpkとRetweetモデルのretweetカラムを比較
+            user_retweet = Retweet.objects.filter(user=self.request.user, tweet=OuterRef('pk'))
+            tweet_list = Tweet.objects.all().annotate(retweet_count=Count('retweets'), login_user_retweeted=Exists(user_retweet)).order_by("-created_at")
+            return tweet_list
+        if self.action == 'retrieve':
+            tweet = Tweet.objects.get(pk = self.kwargs["pk"])
+            retweet_tweet = tweet.retweets.filter(user = self.request.user)
+            retweet = Tweet.objects.annotate(retweet_count=Count('retweets'), login_user_retweeted=Exists(retweet_tweet)).order_by("-created_at")
+            return retweet
