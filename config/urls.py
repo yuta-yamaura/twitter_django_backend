@@ -26,4 +26,5 @@ urlpatterns = [
     path('api/', include('comments.urls')),
     path('api/', include('retweets.urls')),
     path('api/', include('likes.urls')),
+    path('api/', include('follows.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
