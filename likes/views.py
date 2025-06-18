@@ -15,7 +15,6 @@ class LikeToggleAPIView(APIView):
     def post(self, request, pk):
         try:
             tweet = Tweet.objects.get(pk=pk)
-            print('tweetの中身', tweet)
         except Tweet.DoesNotExist:
             return Response({"error": "Tweet not found"}, status=status.HTTP_404_NOT_FOUND)
         
