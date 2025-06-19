@@ -1,28 +1,28 @@
 from rest_framework import serializers
-from .models import Retweet
+from .models import Like
 from users.base_serializers import BaseUserSerializer
 from rest_framework.response import Response
 from users.models import User
 from django.db.models import Count
 from tweets.models import Tweet
 
-class RetweetSerializer(serializers.ModelSerializer):
+class LikeSerializer(serializers.ModelSerializer):
     user = BaseUserSerializer(read_only=True)
 
     class Meta:
-        model = Retweet
+        model = Like
         fields = ['id', 'user', 'tweet', 'created_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
 
-class ProfileRetweetSerializer(serializers.ModelSerializer):
+class ProfileNiceSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField(read_only=True)
     tweet = serializers.SerializerMethodField(read_only=True)
     like_count = serializers.IntegerField(read_only=True)
     retweet_count = serializers.IntegerField(read_only=True)
 
     class Meta:
-        model = Retweet
-        fields = ['id', 'user', 'tweet', 'tweet', 'created_at', 'like_count', 'retweet_count']
+        model = Like
+        fields = ['id', 'user', 'tweet', 'created_at', 'like_count', 'retweet_count']
         read_only_fields = ['id', 'created_at', 'updated_at']
     
     def get_user(self, obj):
@@ -55,14 +55,14 @@ class ProfileRetweetSerializer(serializers.ModelSerializer):
         return None
 
 class ProfileSerializer(serializers.ModelSerializer):
-    retweet = serializers.SerializerMethodField()
+    like = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = BaseUserSerializer.Meta.fields + ['retweet']
+        fields = BaseUserSerializer.Meta.fields + ['like']
 
-    def get_retweet(self, obj):    
-        retweeted_tweet_ids = Retweet.objects.filter(user=obj.pk).values_list('tweet_id', flat=True)
-        user_retweeted_tweets = Tweet.objects.filter(id__in=retweeted_tweet_ids).annotate(like_count=Count('likes', distinct=True), retweet_count=Count('retweets', distinct=True)).order_by('-created_at')
-        user_retweeted_tweets_list = ProfileRetweetSerializer(user_retweeted_tweets, many=True, context=self.context).data
-        return user_retweeted_tweets_list
+    def get_like(self, obj):
+        liked_tweet_ids = Like.objects.filter(user=obj.pk).values_list('tweet_id', flat=True)
+        user_liked_tweets = Tweet.objects.filter(id__in=liked_tweet_ids).annotate(like_count=Count('likes', distinct=True), retweet_count=Count('retweets', distinct=True)).order_by('-created_at')
+        user_liked_tweets_list = ProfileNiceSerializer(user_liked_tweets, many=True, context=self.context).data
+        return user_liked_tweets_list
