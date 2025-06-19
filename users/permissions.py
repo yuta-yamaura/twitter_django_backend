@@ -8,7 +8,6 @@ class UserProfileEdit(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         # ログインユーザー自身のプロフィールの場合
-        print('objの中身', obj)
         if obj.id == request.user.id:  # ユーザーIDで比較
             if request.method in permissions.SAFE_METHODS:
                 return True

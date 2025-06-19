@@ -32,10 +32,11 @@ class MyTokenObtainPairView(TokenObtainPairView):
 class UserProfileSerializer(BaseUserSerializer):
     tweets = serializers.SerializerMethodField(read_only=True)
     login_user = serializers.BooleanField()
+    following = serializers.BooleanField()
 
     class Meta:
         model = User
-        fields = BaseUserSerializer.Meta.fields + ['login_user'] + ['tweets']
+        fields = BaseUserSerializer.Meta.fields + ['login_user', 'following'] + ['tweets']
 
     def get_tweets(self, obj):
         # ユーザーのツイートを取得（作成日時の降順）
