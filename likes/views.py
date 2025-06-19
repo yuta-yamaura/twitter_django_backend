@@ -7,6 +7,7 @@ from .models import Like
 from django.shortcuts import get_object_or_404
 from users.models import User
 from .serializers import ProfileSerializer, LikeSerializer
+from notifications.models import Notification
 
 # Create your views here.
 class LikeToggleAPIView(APIView):
@@ -17,10 +18,15 @@ class LikeToggleAPIView(APIView):
             tweet = Tweet.objects.get(pk=pk)
         except Tweet.DoesNotExist:
             return Response({"error": "Tweet not found"}, status=status.HTTP_404_NOT_FOUND)
-        
-        tweet, created = Like.objects.get_or_create(user=request.user, tweet=tweet)
+        like, created = Like.objects.get_or_create(user=request.user, tweet=tweet)
         if created:
-            serializer = LikeSerializer(tweet)
+            serializer = LikeSerializer(like)
+            Notification.objects.create(
+                notification_type = 'LK',
+                recipient = tweet.user,
+                sender = request.user,
+                message = f"{request.user.username}があなたのツイートをいいねしました"
+            )
             return Response({
                 "message": "いいねしました",
                 "like": serializer.data
