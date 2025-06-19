@@ -23,7 +23,7 @@ class LikeToggleAPIView(APIView):
             serializer = LikeSerializer(tweet)
             return Response({
                 "message": "いいねしました",
-                "retweet": serializer.data
+                "like": serializer.data
             })
         else:
             return Response({"detail": "すでに「いいね」済みです"}, status=status.HTTP_200_OK)
