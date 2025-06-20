@@ -7,6 +7,8 @@ from .serializers import UserSerializerWithToken, UserProfileSerializer, UpdateU
 from django.shortcuts import get_object_or_404
 from tweets.models import Tweet
 from .permissions import UserProfileEdit
+from django.db.models import Exists, OuterRef
+from follows.models import Follow
 # Create your views here.
 
 @api_view(['POST'])
@@ -33,7 +35,10 @@ class UserUpdateView(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
 
     def get_object(self):
-        obj = get_object_or_404(User, pk=self.kwargs["pk"])
+        login_user = self.request.user
+        is_login_user_subquery = User.objects.filter(pk=OuterRef('pk'), id=login_user.id)
+        follow_status = Follow.objects.values_list('follower', flat=True).filter(following=self.kwargs["pk"])
+        obj = User.objects.annotate(login_user=Exists(is_login_user_subquery), following=Exists(follow_status)).get(pk=self.kwargs["pk"])
         self.check_object_permissions(self.request, obj)
         return obj
 
