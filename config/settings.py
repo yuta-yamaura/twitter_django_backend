@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'likes',
     'follows',
     'notifications',
+    'directmessages',
 ]
 
 REST_FRAMEWORK = {
