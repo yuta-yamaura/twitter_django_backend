@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from directmessages.consumer import MyConsumer
+from directmessages.consumer import WebChatConsumer
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,6 +29,7 @@ urlpatterns = [
     path('api/', include('likes.urls')),
     path('api/', include('follows.urls')),
     path('api/', include('notifications.urls')),
+    path('api/', include('directmessages.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-websocket_urlpatterns = [path("ws/test", MyConsumer.as_asgi())]
+websocket_urlpatterns = [path("ws/<int:sender_id>/<str:recipient_name>", WebChatConsumer.as_asgi())]

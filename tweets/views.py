@@ -8,7 +8,6 @@ from retweets.models import Retweet
 from likes.models import Like
 # Create your views here.
 class TweetViewSet(viewsets.ModelViewSet):
-    # queryset = 
     serializer_class = TweetSerializer
     # 第三者が他のTweetを編集、削除できないようデフォルトのパーミッションにカスタムパーミッションを指定
     permission_classes = [CreateUserEditOrDelete]
@@ -25,7 +24,8 @@ class TweetViewSet(viewsets.ModelViewSet):
     
     def destroy(self, request, *args, **kwargs):
         try:
-            instance = self.get_object()
+            tweet_pk = self.kwargs["pk"]
+            instance = Tweet.objects.get(pk=tweet_pk)
             # has_object_permissionメソッドを呼び出す
             self.check_object_permissions(instance, request)
             self.perform_destroy(instance)
