@@ -8,6 +8,7 @@ from .serializers import RetweetSerializer
 from django.shortcuts import get_object_or_404
 from users.models import User
 from .serializers import ProfileSerializer
+from notifications.models import Notification
 
 # Create your views here.
 class RetweetToggleAPIView(APIView):
@@ -22,6 +23,12 @@ class RetweetToggleAPIView(APIView):
         retweet, created = Retweet.objects.get_or_create(user=request.user, tweet=tweet)
         if created:
             serializer = RetweetSerializer(retweet)
+            Notification.objects.create(
+                notification_type = 'RT',
+                recipient = tweet.user,
+                sender = request.user,
+                message = f"{request.user.username}があなたのツイートをリツイートしました"
+            )
             return Response({
                 "message": "リツイートを作成しました",
                 "retweet": serializer.data

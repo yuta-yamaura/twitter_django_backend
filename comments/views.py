@@ -8,6 +8,7 @@ from .permissions import CommentCreateOrDelete
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from notifications.models import Notification
 
 # Create your views here.
 class TweetCommentViewSet(generics.ListCreateAPIView):
@@ -22,6 +23,12 @@ class TweetCommentViewSet(generics.ListCreateAPIView):
         tweet_id = self.kwargs["tweet_id"]
         tweet = get_object_or_404(Tweet, id=tweet_id)
         serializer.save(user=self.request.user, tweet=tweet)
+        Notification.objects.create(
+                notification_type = 'CM',
+                recipient = tweet.user,
+                sender = self.request.user,
+                message = f"{self.request.user.username}があなたのツイートにコメントしました"
+            )
 
 class CommentDestroy(generics.DestroyAPIView):
     serializer_class = CommentSerializer

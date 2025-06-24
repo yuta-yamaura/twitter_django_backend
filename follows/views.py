@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Follow
 from rest_framework import status
+from notifications.models import Notification
 
 # Create your views here.
 class FollowAPIView(APIView):
@@ -17,6 +18,12 @@ class FollowAPIView(APIView):
         following, created = Follow.objects.get_or_create(following=following_user, follower=follow_user)
         if created:
             serializer = FollowSerializer(following)
+            Notification.objects.create(
+                notification_type = 'FL',
+                recipient = following_user,
+                sender = request.user,
+                message = f"{request.user.username}があなたをフォローしました"
+            )
             return Response({
                 "message": "フォローしました",
                 "follow": serializer.data
