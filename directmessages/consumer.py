@@ -19,7 +19,7 @@ class WebChatConsumer(JsonWebsocketConsumer):
     def receive_json(self, content):
         recipient = User.objects.get(username=self.recipient_name)
         sender = User.objects.get(pk=self.sender_id)
-        message = content["message"]
+        message = content["directMessage"]
         new_message = DirectMessage.objects.create(sender=sender, recipient=recipient, content=message)
         async_to_sync(self.channel_layer.group_send)(
             self.room_name,
