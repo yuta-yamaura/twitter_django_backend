@@ -8,11 +8,12 @@ class TweetSerializer(serializers.ModelSerializer):
     like_count = serializers.IntegerField(read_only=True)
     login_user_retweeted = serializers.BooleanField(read_only=True)
     login_user_liked = serializers.BooleanField(read_only=True)
+    login_user_bookmarked = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Tweet
-        fields = ['id', 'content', 'image', 'created_at', 'user', 'retweet_count', 'like_count', 'login_user_retweeted', 'login_user_liked']
-        read_only_fields = ['id', 'created_at', 'updated_at', 'retweet_count', 'like_count', 'login_user_retweeted', 'login_user_liked']
+        fields = ['id', 'content', 'image', 'created_at', 'user', 'retweet_count', 'like_count', 'login_user_retweeted', 'login_user_liked', 'login_user_bookmarked']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'retweet_count', 'like_count', 'login_user_retweeted', 'login_user_liked', 'login_user_bookmarked']
 
 class ProfileTweetSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField(read_only=True)
