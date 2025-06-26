@@ -3,12 +3,13 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status, generics
 from .models import User
-from .serializers import UserSerializerWithToken, UserProfileSerializer, UpdateUserProfileSerializer
+from .serializers import UserSerializerWithToken, UserProfileSerializer, UpdateOrDeleteUserSerializer
 from django.shortcuts import get_object_or_404
 from tweets.models import Tweet
-from .permissions import UserProfileEdit
+from .permissions import UserProfileEdit, UserAccountDelete
 from django.db.models import Exists, OuterRef
 from follows.models import Follow
+from django.core.exceptions import PermissionDenied
 # Create your views here.
 
 @api_view(['POST'])
@@ -31,7 +32,7 @@ def registerUser(request):
 
 class UserUpdateView(generics.RetrieveUpdateAPIView):
     permission_classes = [UserProfileEdit]
-    serializer_class = UpdateUserProfileSerializer
+    serializer_class = UpdateOrDeleteUserSerializer
     queryset = User.objects.all()
 
     def get_object(self):
@@ -45,5 +46,19 @@ class UserUpdateView(generics.RetrieveUpdateAPIView):
     def get_serializer_class(self):
         # GETリクエストとPATCHリクエストで異なるシリアライザーを使用
         if self.request.method == 'PATCH':
-            return UpdateUserProfileSerializer
+            return UpdateOrDeleteUserSerializer
         return UserProfileSerializer
+
+class UserDeleteView(generics.DestroyAPIView):
+    permission_classes = [UserAccountDelete]
+    serializer_class = UpdateOrDeleteUserSerializer
+
+    def get_object(self):
+        try:
+            login_user = self.request.user
+            delete_user = User.objects.get(pk=login_user.pk)
+            self.check_object_permissions(self.request, delete_user)
+            return delete_user
+        except PermissionDenied:
+            message = {'detail': 'ユーザー削除の権限がありません'}
+            return Response(message, status=status.HTTP_401_UNAUTHORIZED)

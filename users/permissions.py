@@ -16,3 +16,15 @@ class UserProfileEdit(permissions.BasePermission):
 
         # その他のユーザーは読み取りのみ許可
         return request.method in permissions.SAFE_METHODS
+
+class UserAccountDelete(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.user.is_authenticated:
+            return True
+        return False
+    
+    def has_object_permission(self, request, view, obj):
+        if obj.id == request.user.id: # ユーザーIDで比較
+            return request.method == "DELETE"
+        # その他のユーザーは読み取りのみ許可
+        return request.method in permissions.SAFE_METHODS
