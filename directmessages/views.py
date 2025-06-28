@@ -68,10 +68,8 @@ class ChatHistoryViewSet(viewsets.ModelViewSet):
     queryset = DirectMessage.objects.all()
     permission_classes = [IsAuthenticated]
     
-    def list(self, request, sender_id=None, recipient_name=None):
-        recipient = User.objects.get(username=recipient_name)
-        chat_history = DirectMessage.objects.filter(
-            Q(sender=sender_id, recipient=recipient) | Q(sender=recipient, recipient=sender_id)
-        ).order_by("created_at")
+    def list(self, request, username=None):
+        recipient = User.objects.get(username=username)
+        chat_history = DirectMessage.objects.filter(sender=recipient).order_by("created_at")
         serializer = ChatHistorySerializer(chat_history, many=True)
         return Response(serializer.data)
