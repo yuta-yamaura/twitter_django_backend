@@ -8,7 +8,7 @@ services:
     volumes:
       - .:/app
       - db_data:/app/db_data
-    command: python3 manage.py runserver 0.0.0.0:8000
+    command: uvicorn config.asgi:application --host 0.0.0.0 --port 8000 --log-level debug --reload
     ports:
       - "8000:8000"
     tty: true
