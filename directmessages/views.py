@@ -1,11 +1,9 @@
-from django.shortcuts import render
 from rest_framework import viewsets
 from .models import DirectMessageRoom, DirectMessageUser, DirectMessage
 from .serializers import DirectMessageUserSerializer, ChatHistorySerializer
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from users.models import User
-from django.db.models import Q, Max, Subquery, OuterRef
 
 # Create your views here.
 class MessageGroupCreate(viewsets.ModelViewSet):
@@ -20,9 +18,10 @@ class MessageGroupCreate(viewsets.ModelViewSet):
         try:
             recipient_user = User.objects.get(id=recipient_user_id)
             # 既存のDMグループがあれば何も返さない
-            # exists_group = DirectMessageUser.objects.filter(user=sender_user)
-            # if exists_group:
-            #     return Response(None)
+            message_groups = DirectMessageUser.objects.filter(user=self.request.user).values_list('room', flat=True)
+            exists_group_list = DirectMessageUser.objects.filter(room__in=message_groups).exclude(user=self.request.user)
+            if exists_group_list:
+                return Response(None)
             # DMグループ作成
             room = DirectMessageRoom.objects.create()
             direct_message_user = [
@@ -53,13 +52,9 @@ class MessageGroup(viewsets.ModelViewSet):
         context["request"] = self.request
         return context
 
-    # TODO:複数回クエリを実行してるので、最適化する必要がある
     def list(self, request):
-        message_groups = DirectMessageUser.objects.filter(
-            user=self.request.user
-            ).values_list('room', flat=True)
-        group_list = DirectMessageUser.objects.filter(room__in=message_groups).exclude(user=self.request.user).values_list('user', flat=True)
-        user_group_list = DirectMessageUser.objects.filter(user__in=group_list)
+        message_groups = DirectMessageUser.objects.filter(user=self.request.user).values_list('room', flat=True)
+        user_group_list = DirectMessageUser.objects.filter(room__in=message_groups).exclude(user=self.request.user).order_by("-created_at")
         serializer = DirectMessageUserSerializer(user_group_list, many=True, context={'request': request})
         return Response(serializer.data)
 
@@ -70,6 +65,10 @@ class ChatHistoryViewSet(viewsets.ModelViewSet):
     
     def list(self, request, username=None):
         recipient = User.objects.get(username=username)
-        chat_history = DirectMessage.objects.filter(sender=recipient).order_by("created_at")
+        # 送信者と受信者が合致するルームインスタンスを取得
+        sender_rooms = DirectMessageUser.objects.filter(user=self.request.user).values_list("room", flat=True)
+        recipient_rooms = DirectMessageUser.objects.filter(user=recipient).values_list("room", flat=True)
+        room_id = sender_rooms.intersection(recipient_rooms).get()
+        chat_history = DirectMessage.objects.filter(room=room_id).order_by("created_at")
         serializer = ChatHistorySerializer(chat_history, many=True)
         return Response(serializer.data)

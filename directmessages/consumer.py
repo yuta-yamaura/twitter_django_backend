@@ -1,7 +1,8 @@
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import JsonWebsocketConsumer
 from users.models import User
-from .models import DirectMessage
+from .models import DirectMessageUser, DirectMessage, DirectMessageRoom
+from django.contrib.auth.models import AnonymousUser
 
 class WebChatConsumer(JsonWebsocketConsumer):
     def __init__(self, *atgs, **kwargs):
@@ -11,24 +12,30 @@ class WebChatConsumer(JsonWebsocketConsumer):
 
     def connect(self):
         self.accept()
-        # 送信者と受信者のkeyを取得
-        self.sender_id = self.scope["url_route"]["kwargs"]["sender_id"]
-        self.recipient_name = self.scope["url_route"]["kwargs"]["recipient_name"]
-        async_to_sync(self.channel_layer.group_add)(self.room_name, self.channel_name)
+        if self.scope["user"] is not AnonymousUser:
+            self.user_id = self.scope["user"].id
+            # 受信者のkeyを取得
+            self.username = self.scope["url_route"]["kwargs"]["username"]
+            recipient_user = User.objects.get(username=self.username)
+            # 送信者と受信者が合致するルームインスタンスを取得
+            sender_rooms = DirectMessageUser.objects.filter(user=self.user_id).values_list("room", flat=True)
+            recipient_rooms = DirectMessageUser.objects.filter(user=recipient_user).values_list("room", flat=True)
+            room_id = sender_rooms.intersection(recipient_rooms).get()
+            self.room = DirectMessageRoom.objects.get(id=room_id)
+            async_to_sync(self.channel_layer.group_add)(self.room_name, self.channel_name)
 
     def receive_json(self, content):
-        recipient = User.objects.get(username=self.recipient_name)
-        sender = User.objects.get(pk=self.sender_id)
-        message = content["directMessage"]
-        new_message = DirectMessage.objects.create(sender=sender, recipient=recipient, content=message)
+        sender = User.objects.get(pk=self.user_id)
+        message = content["content"]
+        new_message = DirectMessage.objects.create(sender=sender, content=message, room=self.room)
         async_to_sync(self.channel_layer.group_send)(
             self.room_name,
             {
                 "type": "chat.message",
                 "new_message": {
                     "sender": new_message.sender.username,
-                    "recipient": new_message.recipient.username,
                     "content": new_message.content,
+                    "room": new_message.room.id,
                     "created_at": new_message.created_at.isoformat(timespec='minutes')
                 }
             },
