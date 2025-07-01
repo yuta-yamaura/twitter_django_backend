@@ -10,8 +10,8 @@ class DirectMessageRoom(models.Model):
         return self.name
 
 class DirectMessageUser(models.Model):
-    user = models.ForeignKey(User, related_name='users', on_delete=models.CASCADE)
-    room = models.ForeignKey(DirectMessageRoom, related_name='rooms', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name='direct_message_users', on_delete=models.CASCADE)
+    room = models.ForeignKey(DirectMessageRoom, related_name='direct_message_users', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -27,8 +27,8 @@ class DirectMessageUser(models.Model):
         ]
 
 class DirectMessage(models.Model):
-    room = models.ForeignKey(DirectMessageRoom, related_name='messages', on_delete=models.CASCADE)
-    sender = models.ForeignKey(User, related_name='senders', on_delete=models.CASCADE)
+    room = models.ForeignKey(DirectMessageRoom, related_name='direct_messages', on_delete=models.CASCADE)
+    sender = models.ForeignKey(User, related_name='direct_messages', on_delete=models.CASCADE)
     content = models.TextField(max_length=100, null=False, blank=False)
     created_at = models.DateTimeField(auto_now=True)
     updated_at = models.DateTimeField(auto_now=True)

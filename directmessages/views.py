@@ -18,8 +18,7 @@ class MessageGroupCreate(viewsets.ModelViewSet):
         try:
             recipient_user = User.objects.get(id=recipient_user_id)
             # 既存のDMグループがあれば何も返さない
-            message_groups = DirectMessageUser.objects.filter(user=self.request.user).values_list('room', flat=True)
-            exists_group_list = DirectMessageUser.objects.filter(room__in=message_groups).exclude(user=self.request.user)
+            exists_group_list = DirectMessageUser.objects.filter(room__in=self.request.user.direct_message_users.values_list('room', flat=True), user=recipient_user)
             if exists_group_list:
                 return Response(None)
             # DMグループ作成
@@ -53,9 +52,8 @@ class MessageGroup(viewsets.ModelViewSet):
         return context
 
     def list(self, request):
-        message_groups = DirectMessageUser.objects.filter(user=self.request.user).values_list('room', flat=True)
-        user_group_list = DirectMessageUser.objects.filter(room__in=message_groups).exclude(user=self.request.user).order_by("-created_at")
-        serializer = DirectMessageUserSerializer(user_group_list, many=True, context={'request': request})
+        message_groups = DirectMessageUser.objects.filter(room__in=self.request.user.direct_message_users.values_list('room', flat=True)).exclude(user=self.request.user).order_by("-created_at")
+        serializer = DirectMessageUserSerializer(message_groups, many=True, context={'request': request})
         return Response(serializer.data)
 
 class ChatHistoryViewSet(viewsets.ModelViewSet):
@@ -66,8 +64,8 @@ class ChatHistoryViewSet(viewsets.ModelViewSet):
     def list(self, request, username=None):
         recipient = User.objects.get(username=username)
         # 送信者と受信者が合致するルームインスタンスを取得
-        sender_rooms = DirectMessageUser.objects.filter(user=self.request.user).values_list("room", flat=True)
-        recipient_rooms = DirectMessageUser.objects.filter(user=recipient).values_list("room", flat=True)
+        sender_rooms = self.request.user.direct_message_users.values_list("room", flat=True)
+        recipient_rooms = recipient.direct_message_users.values_list("room", flat=True)
         room_id = sender_rooms.intersection(recipient_rooms).get()
         chat_history = DirectMessage.objects.filter(room=room_id).order_by("created_at")
         serializer = ChatHistorySerializer(chat_history, many=True)
