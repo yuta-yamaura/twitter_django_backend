@@ -13,13 +13,13 @@ class WebChatConsumer(JsonWebsocketConsumer):
     def connect(self):
         self.accept()
         if self.scope["user"] is not AnonymousUser:
-            self.user_id = self.scope["user"].id
+            self.user = self.scope["user"]
             # 受信者のkeyを取得
             self.username = self.scope["url_route"]["kwargs"]["username"]
             recipient_user = User.objects.get(username=self.username)
             # 送信者と受信者が合致するルームインスタンスを取得
-            sender_rooms = DirectMessageUser.objects.filter(user=self.user_id).values_list("room", flat=True)
-            recipient_rooms = DirectMessageUser.objects.filter(user=recipient_user).values_list("room", flat=True)
+            sender_rooms = self.user.direct_message_users.values_list("room", flat=True)
+            recipient_rooms = recipient_user.direct_message_users.values_list("room", flat=True)
             room_id = sender_rooms.intersection(recipient_rooms).get()
             self.room = DirectMessageRoom.objects.get(id=room_id)
             async_to_sync(self.channel_layer.group_add)(self.room_name, self.channel_name)
