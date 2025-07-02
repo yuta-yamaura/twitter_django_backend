@@ -42,6 +42,6 @@ class BookmarkToggleAPIView(APIView):
         
 class BookmarkList(generics.ListAPIView):
     def get(self, request, *args, **kwargs):
-        user = get_object_or_404(User, pk=self.kwargs["pk"])
+        user = get_object_or_404(User, pk=self.request.user.pk)
         serializer = BookmarkListSerializer(user, many=False, context={"request": request})
         return Response(serializer.data)

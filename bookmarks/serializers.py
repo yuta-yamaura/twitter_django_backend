@@ -68,9 +68,9 @@ class BookmarkListSerializer(serializers.ModelSerializer):
         fields = BaseUserSerializer.Meta.fields + ['bookmark']
 
     def get_bookmark(self, obj):
-        bookmarked_tweet_ids = Bookmark.objects.filter(user=obj.pk).values_list('tweet_id', flat=True)
-        user_retweeted = Retweet.objects.filter(user=obj.pk, tweet=OuterRef('pk'))
-        user_liked = Like.objects.filter(user=obj.pk, tweet=OuterRef('pk'))
+        bookmarked_tweet_ids = obj.bookmarks.values_list('tweet_id', flat=True)
+        user_retweeted = obj.retweets.filter(tweet=OuterRef('pk'))
+        user_liked = obj.likes.filter(tweet=OuterRef('pk'))
         user_bookmarked_tweets = Tweet.objects.filter(id__in=bookmarked_tweet_ids).annotate(retweet_count=Count('retweets', distinct=True), like_count=Count('likes', distinct=True), login_user_retweeted=Exists(user_retweeted), login_user_liked=Exists(user_liked)).order_by('-created_at')
         user_bookmarked_tweets_list = BookmarkTweetSerializer(user_bookmarked_tweets, many=True, context=self.context).data
         return user_bookmarked_tweets_list
