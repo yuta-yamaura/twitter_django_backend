@@ -13,6 +13,7 @@ class WebChatConsumer(JsonWebsocketConsumer):
     def connect(self):
         self.accept()
         if self.scope["user"] is not AnonymousUser:
+            self.user_id = self.scope["user"].id
             self.user = self.scope["user"]
             # 受信者のkeyを取得
             self.username = self.scope["url_route"]["kwargs"]["username"]
