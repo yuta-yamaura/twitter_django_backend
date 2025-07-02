@@ -33,4 +33,4 @@ urlpatterns = [
     path('api/', include('bookmarks.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-websocket_urlpatterns = [path("ws/<int:sender_id>/<str:recipient_name>", WebChatConsumer.as_asgi())]
+websocket_urlpatterns = [path("ws/<str:username>", WebChatConsumer.as_asgi())]

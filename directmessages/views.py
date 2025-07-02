@@ -1,11 +1,9 @@
-from django.shortcuts import render
 from rest_framework import viewsets
-from .models import DirectMessage
-from .serializers import ChatHistorySerializer
+from .models import DirectMessageRoom, DirectMessageUser, DirectMessage
+from .serializers import DirectMessageUserSerializer, ChatHistorySerializer
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from users.models import User
-from django.db.models import Q, Max, Subquery, OuterRef
 
 # Create your views here.
 class MessageGroupCreate(viewsets.ModelViewSet):
@@ -13,23 +11,28 @@ class MessageGroupCreate(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        # URLパラメータからrecipient_idを取得
-        recipient_id = self.kwargs['recipient_id']
+        # URLパラメータからuser_idを取得
+        recipient_user_id = self.kwargs['user_id']
+        sender_user = self.request.user
         
         try:
-            recipient = User.objects.get(id=recipient_id)
+            recipient_user = User.objects.get(id=recipient_user_id)
             # 既存のDMグループがあれば何も返さない
-            exists_group = DirectMessage.objects.filter(sender=request.user, recipient=recipient)
-            if exists_group:
+            exists_group_list = DirectMessageUser.objects.filter(room__in=self.request.user.direct_message_users.values_list('room', flat=True), user=recipient_user)
+            if exists_group_list:
                 return Response(None)
             # DMグループ作成
-            group = DirectMessage.objects.create(
-                sender=request.user, 
-                recipient=recipient,
-                content=None  # 空のメッセージ
+            room = DirectMessageRoom.objects.create()
+            direct_message_user = [
+                DirectMessageUser(user=recipient_user, room=room),
+                DirectMessageUser(user=sender_user, room=room)
+            ]
+            DirectMessageUser.objects.bulk_create(
+                direct_message_user
             )
             
-            serializer = ChatHistorySerializer(group, context={'request': request})
+            sender_group = DirectMessageUser.objects.get(user=sender_user, room=room)
+            serializer = DirectMessageUserSerializer(sender_group, context={'request': request})
             return Response(serializer.data)
             
         except User.DoesNotExist:
@@ -40,7 +43,7 @@ class MessageGroupCreate(viewsets.ModelViewSet):
 
 class MessageGroup(viewsets.ModelViewSet):
     serializer_class = ChatHistorySerializer
-    queryset = DirectMessage.objects.all()
+    queryset = DirectMessageUser.objects.all()
     permission_classes = [IsAuthenticated]
 
     def get_serializer_context(self, *args, **kwatgs):
@@ -49,17 +52,8 @@ class MessageGroup(viewsets.ModelViewSet):
         return context
 
     def list(self, request):
-        latest_message = DirectMessage.objects.filter(
-            Q(recipient=self.request.user) | Q(sender=self.request.user)
-            ).filter(
-                created_at=Subquery(
-                    DirectMessage.objects.filter(
-                        Q(sender=OuterRef('sender'), recipient=OuterRef('recipient')) |
-                        Q(sender=OuterRef('recipient'), recipient=OuterRef('sender'))
-                    ).values('created_at').order_by('-created_at')[:1]
-                )
-            )
-        serializer = ChatHistorySerializer(latest_message, many=True, context={'request': request})
+        message_groups = DirectMessageUser.objects.filter(room__in=self.request.user.direct_message_users.values_list('room', flat=True)).exclude(user=self.request.user).order_by("-created_at")
+        serializer = DirectMessageUserSerializer(message_groups, many=True, context={'request': request})
         return Response(serializer.data)
 
 class ChatHistoryViewSet(viewsets.ModelViewSet):
@@ -67,10 +61,12 @@ class ChatHistoryViewSet(viewsets.ModelViewSet):
     queryset = DirectMessage.objects.all()
     permission_classes = [IsAuthenticated]
     
-    def list(self, request, sender_id=None, recipient_name=None):
-        recipient = User.objects.get(username=recipient_name)
-        chat_history = DirectMessage.objects.filter(
-            Q(sender=sender_id, recipient=recipient) | Q(sender=recipient, recipient=sender_id)
-        ).order_by("created_at")
+    def list(self, request, username=None):
+        recipient = User.objects.get(username=username)
+        # 送信者と受信者が合致するルームインスタンスを取得
+        sender_rooms = self.request.user.direct_message_users.values_list("room", flat=True)
+        recipient_rooms = recipient.direct_message_users.values_list("room", flat=True)
+        room_id = sender_rooms.intersection(recipient_rooms).get()
+        chat_history = DirectMessage.objects.filter(room=room_id).order_by("created_at")
         serializer = ChatHistorySerializer(chat_history, many=True)
         return Response(serializer.data)
