@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'likes',
     'follows',
     'notifications',
+    'directmessages',
 ]
 
 REST_FRAMEWORK = {
@@ -221,3 +222,9 @@ CORS_ALLOW_CREDENTIALS = True # 認証情報（クッキー、セッション）
 # 開発環境の場合のみCORSオリジンを全て許可
 if DEBUG:
     CORS_ORIGIN_ALLOW_ALL = True
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
+
