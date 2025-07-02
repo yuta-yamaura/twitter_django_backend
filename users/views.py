@@ -55,8 +55,7 @@ class UserDeleteView(generics.DestroyAPIView):
 
     def get_object(self):
         try:
-            login_user = self.request.user
-            delete_user = User.objects.get(pk=login_user.pk)
+            delete_user = self.request.user
             self.check_object_permissions(self.request, delete_user)
             return delete_user
         except PermissionDenied:
