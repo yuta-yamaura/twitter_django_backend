@@ -4,9 +4,8 @@ from tweets.models import Tweet
 from rest_framework.response import Response
 from rest_framework import status, generics
 from .models import Bookmark
-from django.shortcuts import get_object_or_404
-from users.models import User
-from .serializers import BookmarkSerializer, BookmarkListSerializer
+from .serializers import BookmarkSerializer, BookmarkTweetSerializer
+from django.db.models import OuterRef, Count, Exists
 
 # Create your views here.
 class BookmarkToggleAPIView(APIView):
@@ -40,8 +39,20 @@ class BookmarkToggleAPIView(APIView):
         except Bookmark.DoesNotExist:
             return Response({"message": "ブックマークしたツイートが存在しません"}, status=status.HTTP_404_NOT_FOUND)
         
-class BookmarkList(generics.ListAPIView):
-    def get(self, request, *args, **kwargs):
-        user = get_object_or_404(User, pk=self.request.user.pk)
-        serializer = BookmarkListSerializer(user, many=False, context={"request": request})
-        return Response(serializer.data)
+class BookmarkListAPIView(generics.ListAPIView):
+    serializer_class = BookmarkTweetSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        user = self.request.user
+        user_retweets = user.retweets.filter(tweet=OuterRef('pk'))
+        user_likes = user.likes.filter(tweet=OuterRef('pk'))
+        
+        return Tweet.objects.filter(
+                bookmarks__user=user
+            ).annotate(
+                retweet_count=Count('retweets', distinct=True),
+                like_count=Count('likes', distinct=True),
+                login_user_retweeted=Exists(user_retweets),
+                login_user_liked=Exists(user_likes)
+            ).select_related('user').order_by('-created_at')
