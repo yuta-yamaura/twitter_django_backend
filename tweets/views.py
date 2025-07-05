@@ -6,6 +6,7 @@ from .permissions import TweetDeletePermission, CreateUserEditOrDelete
 from django.db.models import Count, Exists, OuterRef
 from retweets.models import Retweet
 from likes.models import Like
+from bookmarks.models import Bookmark
 # Create your views here.
 class TweetViewSet(viewsets.ModelViewSet):
     serializer_class = TweetSerializer
@@ -38,11 +39,13 @@ class TweetViewSet(viewsets.ModelViewSet):
             # OuterRefでTweetモデルのpkとRetweetモデルのretweetカラムを比較
             user_retweeted = Retweet.objects.filter(user=self.request.user, tweet=OuterRef('pk'))
             user_liked = Like.objects.filter(user=self.request.user, tweet=OuterRef('pk'))
-            tweet_list = Tweet.objects.all().annotate(retweet_count=Count('retweets', distinct=True), like_count=Count('likes', distinct=True), login_user_retweeted=Exists(user_retweeted), login_user_liked=Exists(user_liked)).order_by("-created_at")
+            user_bookmarked = Bookmark.objects.filter(user=self.request.user, tweet=OuterRef('pk'))
+            tweet_list = Tweet.objects.all().annotate(retweet_count=Count('retweets', distinct=True), like_count=Count('likes', distinct=True), login_user_retweeted=Exists(user_retweeted), login_user_liked=Exists(user_liked), login_user_bookmarked=Exists(user_bookmarked)).order_by("-created_at")
             return tweet_list
         if self.action == 'retrieve':
             tweet = Tweet.objects.get(pk = self.kwargs["pk"])
             user_retweeted = tweet.retweets.filter(user = self.request.user)
             user_liked = tweet.likes.filter(user = self.request.user)
-            retweet = Tweet.objects.annotate(retweet_count=Count('retweets', distinct=True), like_count=Count('likes', distinct=True), login_user_retweeted=Exists(user_retweeted), login_user_liked=Exists(user_liked)).order_by("-created_at")
+            user_bookmarked = tweet.bookmarks.filter(user = self.request.user)
+            retweet = Tweet.objects.annotate(retweet_count=Count('retweets', distinct=True), like_count=Count('likes', distinct=True), login_user_retweeted=Exists(user_retweeted), login_user_liked=Exists(user_liked), login_user_bookmarked=Exists(user_bookmarked)).order_by("-created_at")
             return retweet

@@ -44,7 +44,7 @@ class UserProfileSerializer(BaseUserSerializer):
         user_tweets_list = ProfileTweetSerializer(user_tweets, many=True, context=self.context).data
         return user_tweets_list
 
-class UpdateUserProfileSerializer(BaseUserSerializer):
+class UpdateOrDeleteUserSerializer(BaseUserSerializer):
     class Meta:
         model = User
         fields = BaseUserSerializer.Meta.fields
