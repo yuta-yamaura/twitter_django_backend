@@ -3,9 +3,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status, generics
 from .models import User
-from .serializers import UserSerializerWithToken, UserProfileSerializer, UpdateOrDeleteUserSerializer
-from django.shortcuts import get_object_or_404
-from tweets.models import Tweet
+from .serializers import UserSerializerWithToken, UserProfileSerializer, UpdateOrDeleteUserSerializer, UserSerializer
 from .permissions import UserProfileEdit, UserAccountDelete
 from django.db.models import Exists, OuterRef
 from follows.models import Follow
@@ -29,6 +27,14 @@ def registerUser(request):
         print('エラーの詳細:', str(e))
         message = {'detail': 'ユーザー登録に失敗しました。'}
         return Response(message, status=status.HTTP_400_BAD_REQUEST)
+
+class UserInfo(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializer
+
+    def get_object(self):
+        login_user = self.request.user
+        return login_user
 
 class UserUpdateView(generics.RetrieveUpdateAPIView):
     permission_classes = [UserProfileEdit]

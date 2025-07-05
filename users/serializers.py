@@ -17,6 +17,11 @@ class UserSerializerWithToken(BaseUserSerializer):
         token = RefreshToken.for_user(obj)
         return str(token.access_token)
 
+class UserSerializer(BaseUserSerializer):
+    class Meta:
+        model = BaseUserSerializer.Meta.model
+        fields = BaseUserSerializer.Meta.fields
+
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs: dict[str, Any]) -> dict[str, str]:
         data = super().validate(attrs)
