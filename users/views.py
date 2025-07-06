@@ -39,7 +39,6 @@ class UserInfo(generics.RetrieveAPIView):
 class UserUpdateView(generics.RetrieveUpdateAPIView):
     permission_classes = [UserProfileEdit]
     serializer_class = UpdateOrDeleteUserSerializer
-    queryset = User.objects.all()
 
     def get_object(self):
         login_user = self.request.user
